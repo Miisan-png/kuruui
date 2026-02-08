@@ -484,13 +484,15 @@ local Juice = KuruUI.Juice
 
 ```lua
 -- Scale effects
-Juice.pop(element, scale, duration)      -- Scale up then back
-Juice.punch(element, scale, duration)    -- Scale down with elastic
+Juice.pop(element, scale, duration)         -- Scale up then back
+Juice.punch(element, scale, duration)       -- Scale down with elastic
+Juice.rubber(element, scaleX, scaleY, dur)  -- Rubber band stretch
 
 -- Movement effects
 Juice.shake(element, intensity, duration)
 Juice.bounce(element, height, duration)
 Juice.wiggle(element, angle, duration, count)
+Juice.bob(element, axis, amount, speed)     -- Continuous oscillation
 
 -- Visual effects
 Juice.flash(element, color, duration)
@@ -504,6 +506,9 @@ Juice.fadeSlideOut(element, direction, distance, duration)
 
 -- Text effects
 Juice.typewriter(element, text, speed, onCharacter, onComplete)
+
+-- Screen shake
+Juice.screenShake(intensity, duration)
 ```
 
 ### Stopping Continuous Effects
@@ -511,6 +516,41 @@ Juice.typewriter(element, text, speed, onCharacter, onComplete)
 ```lua
 Juice.stopPulse(element)
 Juice.stopHeartbeat(element)
+Juice.stopBob(element)
+```
+
+### Screen Shake
+
+Apply screen shake globally by updating and applying the offset in your draw loop:
+
+```lua
+function love.update(dt)
+    KuruUI.update(dt)
+    Juice.updateScreenShake(dt)
+end
+
+function love.draw()
+    local sx, sy = Juice.getScreenShakeOffset()
+    love.graphics.push()
+    love.graphics.translate(sx, sy)
+    KuruUI.draw()
+    love.graphics.pop()
+end
+```
+
+### Utilities
+
+```lua
+Juice.lerp(current, target, speed, dt)              -- Smooth interpolation
+Juice.lerpColor(current, target, speed, dt)          -- Smooth color interpolation (mutates current)
+```
+
+### Sequencing
+
+```lua
+Juice.sequence(anim1, anim2, anim3)  -- Run animations one after another
+Juice.parallel(anim1, anim2)         -- Run animations at the same time
+Juice.delay(duration, callback)      -- Delay before callback
 ```
 
 ### Updating Juice Effects
@@ -531,6 +571,7 @@ button.onClick = function()
     Juice.pop(button, 1.2, 0.1)
     Juice.flash(button, {1, 1, 1, 1}, 0.2)
     Juice.shake(button, 4, 0.25)
+    Juice.screenShake(3, 0.15)
 end
 ```
 

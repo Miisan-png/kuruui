@@ -5,6 +5,7 @@ A Love2D UI library.
 This is my personal UI library I made for myself. Thought I'd share it in case someone finds it useful.
 
 ![Showcase](showcase.png)
+![Menu Demo](showcase2.png)
 
 ## Features
 

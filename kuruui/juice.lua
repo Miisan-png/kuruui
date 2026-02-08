@@ -311,6 +311,79 @@ function Juice.delay(duration, callback)
     return data
 end
 
+local screenShakeData = nil
+local screenShakeX = 0
+local screenShakeY = 0
+
+function Juice.screenShake(intensity, duration)
+    screenShakeData = {
+        intensity = intensity or 3,
+        duration = duration or 0.2,
+        elapsed = 0,
+    }
+end
+
+function Juice.updateScreenShake(dt)
+    if not screenShakeData then
+        screenShakeX = Juice.lerp(screenShakeX, 0, 20, dt)
+        screenShakeY = Juice.lerp(screenShakeY, 0, 20, dt)
+        if math.abs(screenShakeX) < 0.01 then screenShakeX = 0 end
+        if math.abs(screenShakeY) < 0.01 then screenShakeY = 0 end
+        return
+    end
+    screenShakeData.elapsed = screenShakeData.elapsed + dt
+    if screenShakeData.elapsed >= screenShakeData.duration then
+        screenShakeData = nil
+        return
+    end
+    local progress = screenShakeData.elapsed / screenShakeData.duration
+    local decay = 1 - progress
+    screenShakeX = (math.random() * 2 - 1) * screenShakeData.intensity * decay
+    screenShakeY = (math.random() * 2 - 1) * screenShakeData.intensity * decay
+end
+
+function Juice.getScreenShakeOffset()
+    return screenShakeX, screenShakeY
+end
+
+function Juice.lerp(current, target, speed, dt)
+    return current + (target - current) * math.min(speed * dt, 1)
+end
+
+function Juice.lerpColor(current, target, speed, dt)
+    local t = math.min(speed * dt, 1)
+    for i = 1, math.min(#current, #target) do
+        current[i] = current[i] + (target[i] - current[i]) * t
+    end
+    return current
+end
+
+function Juice.bob(element, axis, amount, speed)
+    element._bobData = {
+        axis = axis or "y",
+        amount = amount or 3,
+        speed = speed or 2,
+        time = 0,
+        baseValue = element[axis or "y"]
+    }
+end
+
+function Juice.stopBob(element)
+    local data = element._bobData
+    if data then
+        element[data.axis] = data.baseValue
+        element._bobData = nil
+    end
+end
+
+function Juice.updateBob(element, dt)
+    local data = element._bobData
+    if not data then return false end
+    data.time = data.time + dt * data.speed
+    element[data.axis] = data.baseValue + math.sin(data.time) * data.amount
+    return true
+end
+
 function Juice.update(element, dt)
     local active = false
     if Juice.updateShake(element, dt) then active = true end
@@ -319,6 +392,7 @@ function Juice.update(element, dt)
     if Juice.updateTypewriter(element, dt) then active = true end
     if Juice.updateHeartbeat(element, dt) then active = true end
     if Juice.updateGlow(element, dt) then active = true end
+    if Juice.updateBob(element, dt) then active = true end
     return active
 end
 
